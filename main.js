@@ -50,6 +50,9 @@ function init() {
                     this._$element.find('.balloonEditor__close')
                         .off('click');
 
+                    this._$element.find('.balloon-form__submit')
+                        .off('click');
+
                     this.constructor.superclass.clear.call(this);
                 },
                 onSublayoutSizeChange: function () {
@@ -76,12 +79,12 @@ function init() {
                     let descriptionReviews = $('.balloon-form__description').val();
                     arrayReviewsBallon.users.push({name: nameReviews, place: placeReviews, description: descriptionReviews})
                     data.set(arrayReviewsBallon);
-                    console.log(template.build(data));
-                    myPlacemark.properties.set('balloonContent',template.build(data).text);
+                    console.log(this._data.geoObject);
+                    this._data.geoObject.properties.set('balloonContent',template.build(data).text);
                 },
                 onCloseClick: function (e) {
                     e.preventDefault();
-                    myPlacemark.properties.set('dataReviews', arrayReviewsBallon);
+                    this._data.geoObject.properties.set('dataReviews', arrayReviewsBallon);
                     data.unsetAll();
                     this.events.fire('userclose');
                     arrayReviewsBallon = {users: []}
@@ -123,7 +126,6 @@ function init() {
             });
             myMap.geoObjects.add(myPlacemark);
             myPlacemark.balloon.open();
-            console.log(myMap.geoObjects);
         } else {
             myPlacemark.properties.set('dataReviews', arrayReviewsBallon);
             data.unsetAll();
@@ -132,9 +134,11 @@ function init() {
         }
     });
     myMap.geoObjects.events.add('click', function (e) {
-        console.log(e.get('target').properties._data.dataReviews);
+        console.log(e.get('target'));
         arrayReviewsBallon = e.get('target').properties._data.dataReviews;
-
+        data.set(arrayReviewsBallon);
+        e.get('target').properties.set('balloonContent',template.build(data).text);
+        //.properties.set('balloonContent',template.build(data).text);
     });
 
 }
