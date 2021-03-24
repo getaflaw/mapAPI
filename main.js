@@ -9,9 +9,7 @@ function init() {
             behaviors: ['default', 'scrollZoom'],
             controls: ['zoomControl']
         }), data = new ymaps.data.Manager({
-            users: [
-
-            ]
+            users: []
         }), arrayReviewsBallon = {users: []},
         template = new ymaps.Template('{% for user in users %}' +
             `<div class="balloon-reviews">` +
@@ -77,10 +75,15 @@ function init() {
                     let nameReviews = $('.balloon-form__name').val();
                     let placeReviews = $('.balloon-form__place').val();
                     let descriptionReviews = $('.balloon-form__description').val();
-                    arrayReviewsBallon.users.push({name: nameReviews, place: placeReviews, description: descriptionReviews})
+                    let date = new Date();
+                    arrayReviewsBallon.users.push({
+                        name: nameReviews,
+                        place: `${placeReviews} ${date.getDate()}.${date.getMonth()}.${date.getFullYear()}`,
+                        description: descriptionReviews
+                    })
                     data.set(arrayReviewsBallon);
                     console.log(this._data.geoObject);
-                    this._data.geoObject.properties.set('balloonContent',template.build(data).text);
+                    this._data.geoObject.properties.set('balloonContent', template.build(data).text);
                 },
                 onCloseClick: function (e) {
                     e.preventDefault();
@@ -111,11 +114,23 @@ function init() {
             '$[properties.balloonContent]'
         );
 
+    function getAddress(coords) {
+        myPlacemark.properties.set('iconCaption', 'поиск...');
+        ymaps.geocode(coords).then(function (res) {
+            var firstGeoObject = res.geoObjects.get(0);
+
+            myPlacemark.properties
+                .set({
+                    address: firstGeoObject.getAddressLine()
+                });
+        });
+    }
+
     myMap.events.add('click', function (e) {
         if (!myMap.balloon.isOpen()) {
             var coords = e.get('coords');
             myPlacemark = new ymaps.Placemark(coords, {
-                address: coords,
+
                 balloonContent: template.build(data).text
             }, {
                 balloonShadow: false,
@@ -124,6 +139,7 @@ function init() {
                 balloonPanelMaxMapArea: 0,
                 hideIconOnBalloonOpen: true
             });
+            getAddress(coords);
             myMap.geoObjects.add(myPlacemark);
             myPlacemark.balloon.open();
         } else {
@@ -137,7 +153,7 @@ function init() {
         console.log(e.get('target'));
         arrayReviewsBallon = e.get('target').properties._data.dataReviews;
         data.set(arrayReviewsBallon);
-        e.get('target').properties.set('balloonContent',template.build(data).text);
+        e.get('target').properties.set('balloonContent', template.build(data).text);
         //.properties.set('balloonContent',template.build(data).text);
     });
 
