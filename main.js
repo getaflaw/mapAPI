@@ -115,7 +115,6 @@ function init() {
         );
 
     function getAddress(coords) {
-        myPlacemark.properties.set('iconCaption', 'поиск...');
         ymaps.geocode(coords).then(function (res) {
             var firstGeoObject = res.geoObjects.get(0);
 
